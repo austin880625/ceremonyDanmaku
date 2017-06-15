@@ -30,6 +30,7 @@ python3 -m pip install -r requirements.txt
 app_id="XXXXXXXXXXXXXX"
 ```
 PS：Facebook App的設定記得新增web平台，並將site url更改為網站的URL
+
 3. 啟動伺服器：
 ```
 sudo service mongod start
