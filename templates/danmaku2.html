@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="{{static_url("css/dan2.css")}}" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- <script src="{{static_url("js/shared/jquery-3.2.1.min.js")}}"></script> -->
+    <script src="{{static_url("js/dan.js")}}"></script>
+    <title>發送你的彈幕！ | 高雄中學106級畢業典禮</title>
+</head>
+<body>
+    <div class="main_container">
+        <div class="main">
+            <div class="row banner">
+                <h4>目前正在進行</h4>
+                <h1 id="current_program">{{ program }}</h1>
+            </div>
+            <div class="row" id="recent_danmaku">
+            </div>
+        </div>
+
+        <div class="row" id="send_form" style="display: none;">
+            <div class="form-group row">
+                <input type="text" class="form_element" id="danmaku_content" tabindex="-1"/>
+                <button type="button" class="form_element" id="send" >></button>
+            </div>
+        </div>
+        <center>
+            <div class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-use-continue-as="true" scope="public_profile,email" onlogin="checkLoginState();" data-auto-logout-link="true"></div>
+        </center>
+    </div>
+    <script>
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '{{appid}}',
+          xfbml      : true,
+          version    : 'v2.9'
+        });
+        FB.AppEvents.logPageView();
+        checkLoginState();
+      };
+
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/zh_TW/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&version=v2.9&appId={{appid}}";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
+</body>

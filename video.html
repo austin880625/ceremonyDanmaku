@@ -1,0 +1,286 @@
+<html>
+<head>
+<title>Ceremony Danmaku</title>
+<style>
+	body{
+		background-color: #000000;
+		padding: 0px;
+		margin: 0px;
+		color:#fff;
+	}
+	video{
+		position: absolute;
+    	top: 50%;
+    	left: 50%;
+    	transform: translateX(-50%) translateY(-50%);
+		z-index: 0;
+	}
+	#danmaku_list{
+		display: none;
+	}
+	#danmaku_canvas{
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top:0px;
+		left:0px;
+		z-index:1;
+	}
+	.show_region{
+		position: absolute;
+		top:calc(100% - 75px);
+		left:0px;
+		width: 100%;
+		height: 70px;
+		z-index:2;
+	}
+	.buttonbar{
+		display: none;
+		width: 100%;
+		height: 40px;
+		text-align: center;
+		color: #ffffff;
+		line-height: 40px;
+	}
+	input{border:none;}
+	.button{
+		float: left;
+		width: 100px;
+		height: 40px;
+		text-align: center;
+		cursor: pointer;
+		line-height: 40px;
+	}
+	#video_time{width: 90%;height: 30px;margin-left: 10px;display: none;}
+	#connect_button{background-color: #34c623;clear: left;}
+	#load_button{background-color: #23ec54;}
+	#play_button{background-color: #45a4e4;}
+	#pause_button{background-color: #943423;}
+	#stop_danmaku_button{background-color: #943423;}
+	#resume_danmaku_button{background-color: #943423;}
+	#change_sec_button{background-color: #483824;}
+	#update_program_button{background-color: #375bfc;}
+</style>
+</head>
+<body>
+	<video id="main_video" width="1280" height="720" volume=1.0>
+		<source src="" type="video/mp4" id="video_source_control"></source>
+	</video>
+	<canvas id="danmaku_canvas" >
+	</canvas>
+	<div class="show_region">
+		<input type="range" id="video_time" min="0" max="100" value="0" oninput="changetime(1)">
+		<div class="buttonbar">
+			<div class="button" id="connect_button">連線</div>
+			<input type="text" id="file_name" class="button" />
+			<div class="button" id="load_button">載入</div>
+			<div class="button" id="play_button">播放</div>
+			<div class="button" id="pause_button">暫停</div>
+			<input type="text" id="program" class="button" />
+			<div class="button" id="update_program_button">更新時程</div>
+			<div class="button" id="stop_danmaku_button">關閉彈幕</div>
+			<div class="button" id="resume_danmaku_button">開啟彈幕</div>
+			<input type="number" id="new_sec" class="button" />
+			<div class="button" id="change_sec_button">更新間隔</div>
+		</div>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!--<script src="jquery.min.js"></script>-->
+	<script>
+		var server_url;
+		var ws;
+		var inter;
+		var danmaku_state=1;
+		var danmaku_queue=new Array();
+		var danmaku_drawing=new Array();
+		var canv=document.getElementById("danmaku_canvas");
+		canv.width=1280;
+		canv.height=720;
+		var ctx=canv.getContext("2d");
+		var cnt=0;
+		ctx.font="Bold 26px Arial";
+		addEventListener("load",draw);
+
+		function changetime(v){
+			var vid=document.getElementById("main_video");
+			var vid_time=document.getElementById("video_time");
+			if(v==1)vid.currentTime=vid_time.value;
+			else vid_time.value=vid.currentTime;
+		}
+		setInterval(function(){
+			changetime(0);
+		},1000);
+
+		function draw(){
+			window.requestAnimationFrame(draw);
+			if(danmaku_state==0){
+				ctx.clearRect(0,0,canv.width,canv.height);
+				danmaku_queue.length=0;
+				return ;
+			}
+			while(danmaku_queue.length>0){
+				var content=danmaku_queue.pop();
+				var y=Math.random()*(canv.height-30)+30;
+				var t=Math.random();
+				if(t<0.6){while(y>150&&y<650)y=Math.random()*(canv.height-30)+30;}
+				var item={"x":canv.width, "y":y, "speed":Math.random()*3+3, "content":content};
+				//console.log(item.speed);
+				//console.log(item.y);
+				var empty=false;
+				for(var i=0;i<danmaku_drawing.length;i++){
+					if(danmaku_drawing[i]==null){
+						empty=true;
+						danmaku_drawing[i]=item;
+						break;
+					}
+				}
+				if(!empty)danmaku_drawing.push(item);
+			}
+			//cnt++;
+			ctx.fillStyle="black";
+			ctx.clearRect(0,0,canv.width,canv.height);
+			for(var i=0;i<danmaku_drawing.length;i++){
+				if(danmaku_drawing[i]==null)continue;
+				if(danmaku_drawing[i].x<-canv.width){
+					danmaku_drawing[i]=null;
+					continue;
+				}else{
+					danmaku_drawing[i].x-=danmaku_drawing[i].speed;
+				}
+				ctx.fillText(danmaku_drawing[i].content, danmaku_drawing[i].x+3, danmaku_drawing[i].y+3);
+			}
+			ctx.fillStyle="white";
+			for(var i=0;i<danmaku_drawing.length;i++){
+				if(danmaku_drawing[i]==null)continue;
+				ctx.fillText(danmaku_drawing[i].content, danmaku_drawing[i].x, danmaku_drawing[i].y);
+			}
+		}
+
+		function update_state(d){
+			$.ajax({
+	            type:"post",
+	            url:"http://"+server_url+"/changelimit",
+	            data:d,
+				crossDomain: true,
+	            success:function(d){
+	                if(d=="S"){
+	                	console.log("updated");
+					}else{
+						alert("error");
+					}
+	            },
+	            error:function(data){
+					alert(data);
+	            },
+	        });
+		}
+
+		function ping_server(){
+			ws.send("ping");
+		}
+
+		function start_ws(server_url){
+			if(ws!=null)ws.close();
+			ws = new WebSocket("ws://"+server_url+"/Pusheen");
+
+			ws.onopen = function(){
+			};
+			clearInterval(inter)
+			inter=setInterval(ping_server,40000);
+			/*var responded=0;
+
+			setInterval(5000,function(){
+				ws.send("YEE");
+				responded=0;
+				setTimeout(500,function(){
+					if(responded==0){
+
+					}
+				});
+			});
+*/
+			ws.onmessage = function(e){
+				var data=JSON.parse(e.data);
+				if(data.state=="connection established."){
+					console.log("connection established.");
+				}else if(data.state=="dan"){
+					var len=0,i;
+					for(i=0;i<data.content.length;i++){
+						x=data.content.charCodeAt(i);
+						if(x<=0x7f){
+							len++;
+						}else{
+							len+=2;
+						}
+						if(len>=50)break;
+					}
+					danmaku_queue.push(data.user+"："+data.content.slice(0,i));
+				}else if(data.state=="upd"){
+					if(data.dan!=null){
+						danmaku_state=data.dan;
+					}
+					//alert(data.state);
+					//responded=1;
+				}
+			}
+			ws.onclose = function(){
+				start_ws(server_url);
+			}
+		}
+
+		$("#connect_button").click(function(){
+			if("WebSocket" in window){
+				//server_url = "ks106graduate.today";
+				while(server_url==""||server_url==null)server_url = prompt("Enter the location of the danmaku server:","");
+				start_ws(server_url);
+			}
+		});
+
+		$(".show_region").hover(function(){
+			if(!isNaN(document.getElementById("main_video").duration))$("#video_time").show();
+			$(".buttonbar").show();
+		},function(){
+			$("#video_time").hide();
+			$(".buttonbar").hide();
+		});
+		$("#load_button").click(function(){
+			var vid=document.getElementById("main_video");
+			var source=document.getElementById("video_source_control");
+			var vid_time=document.getElementById("video_time");
+			source.src=$("#file_name").val()+".mp4";
+			vid.load();
+			vid_time.value=0;
+			setTimeout(function(){
+				vid_time.max=vid.duration.toString();
+				if(!isNaN(document.getElementById("main_video").duration))$("#video_time").show();
+			},100);
+		});
+		$("#play_button").click(function(){
+			var vid=document.getElementById("main_video");
+			vid.play();
+		});
+		$("#pause_button").click(function(){
+			var vid=document.getElementById("main_video");
+			vid.pause();
+		});
+		$("#update_program_button").click(function(){
+			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","program":$("#program").val()};
+			update_state(update);
+		});
+		$("#stop_danmaku_button").click(function(){
+			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","state":0};
+			update_state(update);
+		});
+		$("#resume_danmaku_button").click(function(){
+			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","state":1};
+			update_state(update);
+		});
+		$("#change_sec_button").click(function(){
+			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","second":$("#new_sec").val()};
+			update_state(update);
+		});
+
+	</script>
+</body>
+</html>
