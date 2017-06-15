@@ -88,6 +88,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<!--<script src="jquery.min.js"></script>-->
 	<script>
+		var fetch_key="73e5b233e2c2e8d19527a20f3259ebcc";
 		var server_url;
 		var ws;
 		var inter;
@@ -265,19 +266,19 @@
 			vid.pause();
 		});
 		$("#update_program_button").click(function(){
-			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","program":$("#program").val()};
+			var update={"fetch_key":fetch_key,"program":$("#program").val()};
 			update_state(update);
 		});
 		$("#stop_danmaku_button").click(function(){
-			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","state":0};
+			var update={"fetch_key":fetch_key,"state":0};
 			update_state(update);
 		});
 		$("#resume_danmaku_button").click(function(){
-			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","state":1};
+			var update={"fetch_key":fetch_key,"state":1};
 			update_state(update);
 		});
 		$("#change_sec_button").click(function(){
-			var update={"fetch_key":"73e5b233e2c2e8d19527a20f3259ebcc","second":$("#new_sec").val()};
+			var update={"fetch_key":fetch_key,"second":$("#new_sec").val()};
 			update_state(update);
 		});
 

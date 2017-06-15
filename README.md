@@ -23,11 +23,15 @@
 ```
 python3 -m pip install -r requirements.txt
 ```
-3. 修改Facebook app ID：
+3. 修改Facebook app ID以及cookie_secret：
 在storage.py中：
 ```python3
+#change this value to ensure security
+cookie_secret="6aa1c13a594ecd09cc7c3fee83b93bc3"
+#this must match with the one in video.html
+fetch_key="73e5b233e2c2e8d19527a20f3259ebcc"
 #Your Facebook app id
-app_id="XXXXXXXXXXXXXX"
+appid="XXXXXXXXXXXXXXXXXX"
 ```
 PS：Facebook App的設定記得新增web平台，並將site url更改為網站的URL
 
@@ -36,7 +40,18 @@ PS：Facebook App的設定記得新增web平台，並將site url更改為網站�
 sudo service mongod start
 python3 server.py
 ```
-4. 影片播放器設定：
+4. 建立capped collection（作為訊息隊列）：
+先進入mogodb shell
+```
+mongo
+```
+依序執行以下指令：
+```
+use main_database
+db.createCollection("messages",{ capped: true, size: 204800 })
+exit
+```
+5. 影片播放器設定：
 * 滑鼠移到頁面左下角按「連線」後輸入彈幕伺服器位置，觀眾連上彈幕網站的首頁即可開始使用
 * 在「連線」旁的文字框輸入影片檔案名稱（在同一資料夾，不須加副檔名）後按「載入」後即可以「播放」、「暫停」按鈕控制影片進度
 * 右邊兩個文字框一個用來更新典禮進度，一個可用來更新彈幕的冷卻時間
