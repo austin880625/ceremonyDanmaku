@@ -1,8 +1,7 @@
-#Ceremony Danmaku
+# Ceremony Danmaku
 基本的典禮播放影片用的彈幕系統，主要使用tornado框架
 
-##Feature
-
+## Feature
 ### 彈幕伺服器
 * 首頁即為彈幕發送頁面
 * 以Facebook帳號登入（需創建Facebook app）
