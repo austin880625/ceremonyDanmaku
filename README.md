@@ -1,6 +1,6 @@
 # Ceremony Danmaku
 基本的典禮播放影片用的彈幕系統，主要使用tornado框架
-##Screenshot
+## Screenshot
 ![Alt text](/screenshot.png "screenshot")
 
 ## Feature
